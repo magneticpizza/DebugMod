@@ -47,6 +47,7 @@ namespace DebugMod
         internal static bool noclip;
         internal static Vector3 noclipPos;
         internal static bool cameraFollow;
+        internal static bool stateOnDeath;
 
         internal static SaveStateManager saveStateManager;
 
@@ -176,7 +177,7 @@ namespace DebugMod
         
         public override string GetVersion()
         {
-            string version = "1.6.2";
+            string version = "1.6.3";
 #if DEBUG
             version = string.Concat(version, "-dev");
 #endif
@@ -206,7 +207,17 @@ namespace DebugMod
             instance.Log("Saved");
         }
 
-        private int PlayerDamaged(int damageAmount) => infiniteHP ? 0 : damageAmount;
+        private int PlayerDamaged(int damageAmount) 
+        {
+            int damage = infiniteHP ? 0 : damageAmount;
+            if (stateOnDeath && (PlayerData.instance.health - damage <= 0))
+            {
+                saveStateManager.LoadNewState(SaveStateType.Memory);
+                Console.AddLine("Lethal damage prevented, savestate loading");
+                return 0;
+            }
+            return damage;
+        }
 
         private void NewCharacter() => LoadCharacter(0);
 

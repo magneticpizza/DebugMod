@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using GlobalEnums;
 using HutongGames.PlayMaker.Actions;
 using MonoMod.Utils;
 using UnityEngine;
@@ -200,6 +201,8 @@ namespace DebugMod
         {
             //prevent double loads/saves, black screen, etc
             loadingSavestate = true;
+            bool stateOnDeath = DebugMod.stateOnDeath;
+            DebugMod.stateOnDeath = false;
 
             //prevents silly things from happening
             Time.timeScale = 0;
@@ -228,8 +231,10 @@ namespace DebugMod
             PlayMakerFSM.BroadcastEvent("CONVO CANCEL");
 
             data.cameraLockArea = (data.cameraLockArea ?? typeof(CameraController).GetField("currentLockArea", BindingFlags.Instance | BindingFlags.NonPublic));
-            string dummyScene = "Room_Mender_House";
-            if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Room_Mender_House") dummyScene = "Room_Sly_Storeroom";
+            string dummyScene = 
+                UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Room_Mender_House" ? 
+                "Room_Sly_Storeroom" : 
+                "Room_Mender_House";
 
             GameManager.instance.ChangeToScene(dummyScene, "", 0f);//trust
 
@@ -285,47 +290,46 @@ namespace DebugMod
             string loadingtime = loadingStateTime.ToString();
             Console.AddLine("Loaded savestate in " + loadingtime);
 
-
             Time.timeScale = 1f;
+            DebugMod.stateOnDeath = stateOnDeath;
             
             typeof(HeroController).GetMethod("FinishedEnteringScene",BindingFlags.Instance | BindingFlags.NonPublic).Invoke(HeroController.instance, [true]);
             HUDFixes();
-            if (DebugMod.settings.SaveStateGlitchFixes) SaveStateGlitchFixes();
-            RoomSpecific.StopCoros();
-            if (data.useRoomSpecific != 0) RoomSpecific.DoRoomSpecific(data.saveScene, data.useRoomSpecific);
-
-
-            // We have to set the game non-paused because TogglePauseMenu sucks and UIClosePauseMenu doesn't do it for us.
-            GameManager.instance.isPaused = false;
-            //This allows the next pause to stop the game correctly, idk what the variable for 1221 api is
-            //Time.TimeController.GenericTimeScale = 1f;x
-           
-            yield break;
-
-
-
-        }
-        private void HUDFixes()
-        {
-
-            GameCameras.instance.hudCanvas.gameObject.SetActive(true);
-
-            HeroController.instance.geoCounter.geoTextMesh.text = data.savedPd.geo.ToString();
-
-            bool isInfiniteHp = DebugMod.infiniteHP;
-            DebugMod.infiniteHP = false;
-            PlayerData.instance.hasXunFlower = false;
-            PlayerData.instance.health = data.savedPd.health;
-            HeroController.instance.TakeHealth(1);
-            HeroController.instance.AddHealth(1);
-            PlayerData.instance.hasXunFlower = data.savedPd.hasXunFlower;
-            DebugMod.infiniteHP = isInfiniteHp;
 
             int healthBlue = data.savedPd.healthBlue;
             for (int i = 0; i < healthBlue; i++)
             {
                 PlayMakerFSM.BroadcastEvent("ADD BLUE HEALTH");
+                yield return new WaitForEndOfFrame();
             }
+
+            if (DebugMod.settings.SaveStateGlitchFixes) SaveStateGlitchFixes();
+            RoomSpecific.StopCoros();
+            if (data.useRoomSpecific != 0) RoomSpecific.DoRoomSpecific(data.saveScene, data.useRoomSpecific);
+
+            // We have to set the game non-paused because TogglePauseMenu sucks and UIClosePauseMenu doesn't do it for us.
+            GameManager.instance.isPaused = false;
+            //This allows the next pause to stop the game correctly, idk what the variable for 1221 api is
+            //Time.TimeController.GenericTimeScale = 1f;x
+
+            // fixes control issues when loading state from damage, should delay by at least 0.08 (this seems jank as hell but idk how else to do it...)
+            yield return new WaitForSeconds(0.08f);
+            typeof(HeroController).GetMethod("CancelDamageRecoil", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(HeroController.instance, []);
+
+            yield break;
+        }
+        private void HUDFixes()
+        {
+            GameCameras.instance.hudCanvas.gameObject.SetActive(true);
+
+            HeroController.instance.geoCounter.geoTextMesh.text = data.savedPd.geo.ToString();
+
+            PlayerData.instance.hasXunFlower = false; // prevent breaking flower
+            PlayerData.instance.health = data.savedPd.health;
+            PlayerData.instance.healthBlue = 0;
+            HeroController.instance.proxyFSM.SendEvent("HeroCtrl-Healed");
+            HeroController.instance.proxyFSM.SendEvent("HeroCtrl-HeroDamaged");
+            PlayerData.instance.hasXunFlower = data.savedPd.hasXunFlower;
 
             //should fix hp
             //the "Idle" mesh never gets disabled when Charm Indicator runs

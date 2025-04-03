@@ -339,6 +339,13 @@ namespace DebugMod
             }
         }
 
+        [BindableMethod(name = "Load Savestate On Death", category = "Savestates")]
+        public static void LoadStateOnDeath()
+        {
+            DebugMod.stateOnDeath = !DebugMod.stateOnDeath;
+            Console.AddLine("Quickslot SaveState will " + (DebugMod.stateOnDeath ? "now" : "no longer") + " load on death");
+        }
+
 
         /*
         [BindableMethod(name = "Toggle auto slot", category = "Savestates")]
