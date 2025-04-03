@@ -312,12 +312,18 @@ namespace DebugMod
             //This allows the next pause to stop the game correctly, idk what the variable for 1221 api is
             //Time.TimeController.GenericTimeScale = 1f;x
 
-            // fixes control issues when loading state from damage, should delay by at least 0.08 (this seems jank as hell but idk how else to do it...)
-            yield return new WaitForSeconds(0.08f);
-            typeof(HeroController).GetMethod("CancelDamageRecoil", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(HeroController.instance, []);
+            HeroController.instance.StartCoroutine(RecoilStorageFix());
 
             yield break;
         }
+
+        private IEnumerator RecoilStorageFix()
+        {
+            // fixes control issues when loading state from damage, should delay by at least 0.08 (this seems jank as hell but idk how else to do it...)
+            yield return new WaitForSeconds(0.08f);
+            typeof(HeroController).GetMethod("CancelDamageRecoil", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(HeroController.instance, []);
+        }
+
         private void HUDFixes()
         {
             GameCameras.instance.hudCanvas.gameObject.SetActive(true);
