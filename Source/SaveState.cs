@@ -321,7 +321,9 @@ namespace DebugMod
         {
             // fixes control issues when loading state from damage, should delay by at least 0.08 (this seems jank as hell but idk how else to do it...)
             yield return new WaitForSeconds(0.08f);
-            typeof(HeroController).GetMethod("CancelDamageRecoil", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(HeroController.instance, []);
+
+            if(HeroController.instance.cState.recoiling)
+                typeof(HeroController).GetMethod("CancelDamageRecoil", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(HeroController.instance, []);
         }
 
         private void HUDFixes()
