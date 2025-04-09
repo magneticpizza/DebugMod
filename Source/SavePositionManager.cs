@@ -1,17 +1,15 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using UnityEngine;
-using System.Reflection;
-using static DebugMod.EnemiesPanel;
 using System;
+
 
 namespace DebugMod
 {
     public class SavePositionManager
     {
-        private static List<EnemyData> FSMs = new List<EnemyData>();
-        private static List<EnemyData> CreatedFSMs = new List<EnemyData>();
+        private static List<GameObject> SavedGameObjects = [];
+        private static List<GameObject> DuplicatedObjects = [];
         //public static List<Vector3>;
         //public static List<Vector3,>
         // too complicated public static PlayMakerFSM KnightFsm = DebugMod.RefKnight.LocateMyFSM("Knight-ProxyFSM") ;
@@ -23,17 +21,16 @@ namespace DebugMod
         // public static List
         public static void SaveState()
         {
-
-            //float dash_timer = ReflectionHelper.GetField<HeroController, float>(HeroController.instance, "dash_timer")
             KnightPos = DebugMod.RefKnight.gameObject.transform.position;
             KnightVel = HeroController.instance.current_velocity;
             CamPos = DebugMod.RefCamera.gameObject.transform.position;
             PositionScene = DebugMod.GetSceneName();
-            InitializedPosition = true;
-            FSMs = GetAllEnemies(new List<EnemyData>());
+            SavedGameObjects = GetAllEnemies();
             //TODO: check this . used to be FSMs = GetAllEnemies(CreatedFSMs);
-            FSMs.ForEach(delegate (EnemyData dat) {     dat.gameObject.SetActive(false);    });
+            foreach (GameObject savedObject in SavedGameObjects) savedObject.SetActive(false);
             Console.AddLine("Positional save set in " + DebugMod.GetSceneName());
+            InitializedPosition = true;
+            LoadState();
         }
         public static void LoadState()
         {
@@ -41,7 +38,7 @@ namespace DebugMod
                 try
                 {
                     RemoveAllCopies();
-                    CreatedFSMs = Create();
+                    DuplicatedObjects = Create();
                     // Move knight to saved location, change velocity to saved velocity, Move Camera to saved camera position, 
                     DebugMod.RefKnight.gameObject.transform.position = KnightPos;
                     HeroController.instance.current_velocity = KnightVel;
@@ -56,61 +53,47 @@ namespace DebugMod
             }
         }
 
-        private static List<EnemyData> Create() 
+        private static List<GameObject> Create() 
         {
-            List<EnemyData> data = new List<EnemyData>();
-            for (int i = 0; i < FSMs.Count; i++)
+            List<GameObject> InstantiatedEnemies = [];
+            List<GameObject> nonNulled = SavedGameObjects.FindAll(ed => ed.gameObject != null);
+            for (int i = 0; i < nonNulled.Count; i++)
             {
-                EnemyData dattemp = FSMs.FindAll(ed => ed.gameObject != null)[i];
-                GameObject gameObject = UnityEngine.Object.Instantiate(dattemp.FSM.gameObject, dattemp.gameObject.transform.position, dattemp.gameObject.transform.rotation) as GameObject;
-                Component component = gameObject.GetComponent<tk2dSprite>();
-                PlayMakerFSM playMakerFSM2 = FSMUtility.LocateFSM(gameObject, dattemp.FSM.FsmName);
-                int health = playMakerFSM2.FsmVariables.GetFsmInt("HP").Value;
+                GameObject copying = nonNulled[i];
+                GameObject gameObject = UnityEngine.Object.Instantiate(copying, copying.transform.position, copying.transform.rotation) as GameObject;
                 gameObject.SetActive(true);
-                data.Add(new EnemyData(health, playMakerFSM2, component, parent, gameObject));
+                InstantiatedEnemies.Add(gameObject);
             };
-            return data;
+            return InstantiatedEnemies;
         }   
         private static void RemoveAllCopies()
         {
             //get all copies and remove them.
-            CreatedFSMs.ForEach(delegate (EnemyData dat)
+            foreach (GameObject obj in DuplicatedObjects)
             {
-               if (!FSMs.Any(ed => ed.gameObject == dat.gameObject))
-                    GameObject.Destroy(dat.gameObject.gameObject.gameObject.gameObject);
-            });
+               if (!SavedGameObjects.Any(ed => ed == obj))
+                    GameObject.Destroy(obj);
+            };
         }
-        // this works but idk how ??
-        private static List<EnemyData> GetAllEnemies(List<EnemyData> Exclude)
+        private static List<GameObject> GetAllEnemies()
         {
+            List<GameObject> ret = [];
+            int layerMask =   
+            (1 << 8) + //terrain
+            (1 << 11) + //enemies
+            //(1 << 17) + //attack
+            (1 << 19); //interactive objects
             float boxSize = 250f;
-            List<EnemyData> ret = new List<EnemyData>();
             if (HeroController.instance != null && !HeroController.instance.cState.transitioning && DebugMod.GM.IsGameplayScene())
             {
-                int layerMask = 133120;
                 Collider2D[] array = Physics2D.OverlapBoxAll(DebugMod.RefKnight.transform.position, new Vector2(boxSize, boxSize), 1f, layerMask);
-                if (array != null)
+                if (array == null) return ret;
+                for (int i = 0; i < array.Length; i++)
                 {
-                    for (int i = 0; i < array.Length; i++)
-                    {
-                        PlayMakerFSM playMakerFSM = FSMUtility.LocateFSM(array[i].gameObject, "health_manager_enemy");
-                        if (playMakerFSM == null)
-                        {
-                            FSMUtility.LocateFSM(array[i].gameObject, "health_manager");
-                        }
-                        if (playMakerFSM && array[i].gameObject.activeSelf && !(Exclude.Any(ed => ed.gameObject == array[i].gameObject)) && !Ignore(array[i].gameObject.name))
-                        {
-                            Component component = array[i].gameObject.GetComponent<tk2dSprite>();
-                            if (component == null)
-                            {
-                                component = null; //?
-                            }
-                            int Health = playMakerFSM.FsmVariables.GetFsmInt("HP").Value;
-                            ret.Add(new EnemyData(Health, playMakerFSM, component, parent, array[i].gameObject));
-                        }
-                    }
-                }  
+                    ret.Add(array[i].gameObject);
+                }
             }
+            ret = ret.Distinct().ToList();
             return ret;
         }
     }
