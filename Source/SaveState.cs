@@ -414,6 +414,14 @@ namespace DebugMod
 
                 HeroController.instance.cState.nearBench = false;
             //}*/
+
+            // fix walljump bug (gets rid of walljump particle, but cba to figure out how to add it back)
+            if(HeroController.instance.wallPuffPrefab is null)
+            {
+                HeroController.instance.wallPuffPrefab = new GameObject();
+                GameObject.DontDestroyOnLoad(HeroController.instance.wallPuffPrefab);
+                HeroController.instance.wallPuffPrefab.transform.parent = DebugMod.RefKnight.transform;
+            }
         }
         #endregion
 
