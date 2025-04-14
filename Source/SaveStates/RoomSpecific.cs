@@ -1,6 +1,6 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
+using HutongGames.PlayMaker;
 using UnityEngine;
 
 namespace DebugMod
@@ -198,6 +198,79 @@ namespace DebugMod
             }
         }
 
+        private static void StartWatcherPair(int index)
+        {
+            // for some reason we're unable to use FindFsmGlobally for the battle control FSM, so here we are.
+            PlayMakerFSM battleFSM = GameObject.Find("Battle Control").GetComponents<PlayMakerFSM>()[0];
+            FsmInt battleEnemies = battleFSM.FsmVariables.FindFsmInt("Battle Enemies");
+
+            // Idle
+            battleFSM.SendEvent("ENTER");
+            // Close
+            battleFSM.SendEvent("FINISHED");
+
+            if (index == 1)
+            {
+                SkipFirstKnight(battleFSM, battleEnemies);
+                battleFSM.SetState("Knight 2");
+            }
+
+            if (index == 2)
+            {
+                SkipFirstKnight(battleFSM, battleEnemies);
+                string wk2Name = "Black Knight 2";
+                string wk3Name = "Black Knight 4";
+
+                GameObject.Destroy(GameObject.Find(wk2Name));
+                GameObject.Destroy(GameObject.Find(wk3Name));
+                // need to decrement an extra one for the knight killed by the chandelier
+                battleEnemies.Value -= 3;
+                battleFSM.SetState("Knight 5");
+            }
+
+            // secret!
+            if(index == 69)
+            {
+                // Start Notify
+                battleFSM.SendEvent("FINISHED");
+                // Knight 1
+                battleFSM.SendEvent("NEXT");
+                // Pause 6
+                battleFSM.SendEvent("FINISHED");
+                // Knight 2
+                battleFSM.SendEvent("NEXT");
+                // Pause 1
+                battleFSM.SendEvent("FINISHED");
+                // Knight 3
+                battleFSM.SendEvent(PlayerData.instance.watcherChandelier ? "SKIP" : "NEXT");
+                // Pause 2 / Skip
+                battleFSM.SendEvent("FINISHED");
+                // Knight 4
+                battleFSM.SendEvent("NEXT");
+                // Pause 3
+                battleFSM.SendEvent("FINISHED");
+                // Knight 5
+                battleFSM.SendEvent("NEXT");
+                // Pause 4
+                battleFSM.SendEvent("FINISHED");
+            }
+        }
+
+        private static void SkipFirstKnight(PlayMakerFSM battleFSM, FsmInt battleEnemies)
+        {
+            // Destroy first Knight Object
+            string wk1Name = "Black Knight 1";
+            string wkChandName = "Black Knight 2";
+            GameObject.Destroy(GameObject.Find(wk1Name));
+            // Decrement Battle Enemies so the next knights spawn
+            battleEnemies.Value--;
+            if (!PlayerData.instance.watcherChandelier)
+            {
+                battleFSM.SetState("Knight 3");
+                battleFSM.SendEvent("SKIP");
+            }
+        }
+
         #endregion
 
         public static void DoRoomSpecific(string scene, int index)
@@ -221,11 +294,15 @@ namespace DebugMod
                 case "Cutscene_Boss_Door":
                     FastDreamerCutscene(index); 
                     break;
+                case "Ruins2_03":
+                    StartWatcherPair(index);
+                    break;
                 default:
                     Console.AddLine("No Room Specific Function Found In: " + scene);
                     break;
             }
         }
+
         private static PlayMakerFSM FindFsmGlobally(string gameObjectName, string fsmName)
         {
             return GameObject.Find(gameObjectName).LocateMyFSM(fsmName);
