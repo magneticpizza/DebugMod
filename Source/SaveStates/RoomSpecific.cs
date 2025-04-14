@@ -99,7 +99,7 @@ namespace DebugMod
         {
             float time = 14.2f;
             float scale = index;
-            if (index < 5) { scale = 5; }
+            if (index < 1) { scale = 1; }
             if (index > MAX_TIMESCALE) scale = MAX_TIMESCALE;
             string fsmName = "Control";
             string goName1 = "hollow_knight_chain_base";
