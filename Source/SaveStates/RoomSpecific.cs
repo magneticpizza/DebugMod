@@ -91,9 +91,49 @@ namespace DebugMod
         {
             StartCoro(SpiderTownHelper(index));
         }
-        private static void BreakTHKChains(int index) //Room_Final_Boss
+        private static void DoTHK(int index) //Room_Final_Boss
         {
-            StartCoro(BreakTHKChainscoro(index));
+            if (index == 2) RadianceEntrySequence();
+
+            else StartCoro(BreakTHKChainscoro(index));
+        }
+        private static void RadianceEntrySequence()
+        {
+            PlayMakerFSM startFSM = FindFsmGlobally("Boss Control", "Battle Start");
+
+            startFSM.SetState("Init");
+            startFSM.SendEvent("Revisit");
+            startFSM.SetState("Fight Start");
+
+            string thkName = "Hollow Knight Boss";
+
+            PlayMakerFSM phaseFSM = FindFsmGlobally(thkName, "Phase Control");
+            phaseFSM.SetState("Set Phase 4");
+            phaseFSM.SendEvent("HORNET READY");
+
+            PlayMakerFSM controlFSM = FindFsmGlobally(thkName, "Control");
+
+            int i = 0;
+            // Init
+            controlFSM.SendEvent("FINISHED");
+            // Idle
+            controlFSM.SendEvent("MOVE");
+            // Roar Antic
+            controlFSM.SendEvent("FINISHED");
+            // Long Roar
+            controlFSM.SendEvent("FINISHED");
+            // H Stab Antic
+            controlFSM.SendEvent("FINISHED");
+            // H Scene 1
+            controlFSM.SendEvent("FINISHED");
+            //H Thread
+            controlFSM.SendEvent("FINISHED");
+
+            // Get rid of scream effect
+            GameObject.Destroy(GameObject.Find("Roar Wave Emitter(Clone)"));
+
+            // Make it so the Radiance encounter is not a Refight
+            HeroController.instance.proxyFSM.FsmVariables.FindFsmBool("Faced Radiance").Value = false;
         }
         private static IEnumerator BreakTHKChainscoro(int index)
         {
@@ -200,8 +240,7 @@ namespace DebugMod
 
         private static void StartWatcherPair(int index)
         {
-            // for some reason we're unable to use FindFsmGlobally for the battle control FSM, so here we are.
-            PlayMakerFSM battleFSM = GameObject.Find("Battle Control").GetComponents<PlayMakerFSM>()[0];
+            PlayMakerFSM battleFSM = FindFsmGlobally("Battle Control", "Control");
             FsmInt battleEnemies = battleFSM.FsmVariables.FindFsmInt("Battle Enemies");
 
             // Idle
@@ -255,12 +294,10 @@ namespace DebugMod
                 battleFSM.SendEvent("FINISHED");
             }
         }
-
         private static void SkipFirstKnight(PlayMakerFSM battleFSM, FsmInt battleEnemies)
         {
             // Destroy first Knight Object
             string wk1Name = "Black Knight 1";
-            string wkChandName = "Black Knight 2";
             GameObject.Destroy(GameObject.Find(wk1Name));
             // Decrement Battle Enemies so the next knights spawn
             battleEnemies.Value--;
@@ -269,6 +306,57 @@ namespace DebugMod
                 battleFSM.SetState("Knight 3");
                 battleFSM.SendEvent("SKIP");
             }
+        }
+        private static void DoUumuu(int index)
+        {
+            GameObject umuGo = GameObject.Find("Mega Jellyfish");
+            PlayMakerFSM umuFSM = umuGo.LocateMyFSM("Mega Jellyfish");
+
+            PlayMakerFSM battleFSM = FindFsmGlobally("Battle Scene", "Control");
+            battleFSM.SendEvent("Enter");
+
+            Vector2 umuPos = new();
+
+            switch (index) {
+                case 1: // Any% & 1xx?
+                    umuPos = new Vector2(55.35359f, 109.8851f);
+                    break;
+                case 2: // TE & All Skills
+                    umuPos = new Vector2(68.3791f, 120.76f);
+                    break;
+                default:
+                    break;
+            }
+
+            // implement dash slash storage here?
+            //if(PlayerData.instance.hasDashSlash)
+            //{
+            //}
+
+            umuGo.transform.position = umuPos;
+            StartCoro(SummonQuirrel(umuFSM));
+        }
+        private static IEnumerator SummonQuirrel(PlayMakerFSM umuFSM)
+        {
+            umuFSM.SetState("Init");
+            // Init
+            umuFSM.SendEvent("FINISHED");
+            // Sleep
+            umuFSM.SendEvent("BATTLE START");
+            // Wake Pause
+            umuFSM.SendEvent("FINISHED");
+            // Wake Rumble
+            umuFSM.SendEvent("FINISHED");
+            // Burst
+            umuFSM.SendEvent("FINISHED");
+            // Music
+            umuFSM.SendEvent("FINISHED");
+            // Start
+            umuFSM.SendEvent("FINISHED");
+            // Idle
+            umuFSM.SendEvent("QUIRREL");
+            yield return new WaitForSeconds(1);
+            umuFSM.SetState("Slash Antic");
         }
 
         #endregion
@@ -283,7 +371,7 @@ namespace DebugMod
                     EnterSpiderTownTrap(index);
                     break;
                 case "Room_Final_Boss_Core":
-                    BreakTHKChains(index);
+                    DoTHK(index);
                     break;
                 case "Dream_NailCollection":
                     ObtainDreamNail(index);
@@ -296,6 +384,9 @@ namespace DebugMod
                     break;
                 case "Ruins2_03":
                     StartWatcherPair(index);
+                    break;
+                case "Fungus3_archive_02":
+                    DoUumuu(index);
                     break;
                 default:
                     Console.AddLine("No Room Specific Function Found In: " + scene);
