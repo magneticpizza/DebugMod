@@ -12,7 +12,7 @@ namespace DebugMod
         //This class is intended to recreate some scenarios, with more accuracy than that of the savestate class. 
         #region Rooms
         
-        private static readonly float MAX_TIMESCALE_LAGGY = 6;
+        private static readonly float MAX_TIMESCALE_LAGGY = 10;
         private static readonly float MAX_TIMESCALE = 20;
                 private static List<Coroutine> coroRefs =[];
         private static void StartCoro(IEnumerator routine)
@@ -377,13 +377,27 @@ namespace DebugMod
             // Set Uumuu's FSM to the appropriate state
             umuFSM.SetState("Attack Recover");
         }
+        //Abyss_12
+        private static void FastAbyssShriek(int index)
+        {
+            StartCoro(FastAbyssShriekCoro(index));
+        }
+        private static IEnumerator FastAbyssShriekCoro(int index)
+        {
+            WaitForTime(14f,20);
+            HeroController.instance.transform.position = new(427.1f, 14f);
+            yield return new WaitForFixedUpdate();
+            HeroController.instance.transform.position = new(47.1f, 14f);
+            yield return new WaitForFixedUpdate();
+            HeroController.instance.gameObject.LocateMyFSM("Spell Control").SetState("Has Scream?");
+
+            yield break;
+        }
 
         #endregion
 
         public static void DoRoomSpecific(string scene, int index)
         {
-            //GameManager.instance.hero_ctrl.RegainControl();
-            if (index == 0) return;
             switch (scene)
             {
                 case "Deepnest_Spider_Town":
@@ -406,6 +420,9 @@ namespace DebugMod
                     break;
                 case "Fungus3_archive_02":
                     DoUumuu(index);
+                    break;
+                case "Abyss_12":
+                    FastAbyssShriek(index);
                     break;
                 default:
                     Console.AddLine("No Room Specific Function Found In: " + scene);
