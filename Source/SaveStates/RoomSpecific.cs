@@ -1,6 +1,8 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using HutongGames.PlayMaker;
+using HutongGames.PlayMaker.Actions;
 using UnityEngine;
 
 namespace DebugMod
@@ -113,7 +115,6 @@ namespace DebugMod
 
             PlayMakerFSM controlFSM = FindFsmGlobally(thkName, "Control");
 
-            int i = 0;
             // Init
             controlFSM.SendEvent("FINISHED");
             // Idle
@@ -293,6 +294,11 @@ namespace DebugMod
                 // Pause 4
                 battleFSM.SendEvent("FINISHED");
             }
+
+            else
+            {
+                Console.AddLine("Watcher Knight RoomSpecific value " + index + " is invalid!");
+            }
         }
         private static void SkipFirstKnight(PlayMakerFSM battleFSM, FsmInt battleEnemies)
         {
@@ -309,39 +315,53 @@ namespace DebugMod
         }
         private static void DoUumuu(int index)
         {
+            float xMin, xMax, yMin, yMax, randOffset;
+
+            // Set min/max Uumuu positions generally seen by different lures
+            switch (index)
+            {
+                case 1: // Any%
+                    xMin = 64.1f;
+                    xMax = 65.5f;
+                    yMin = 104.3f;
+                    yMax = 108.4f;
+                    break;
+                case 2: // TE
+                case 3: // All Skills
+                    xMin = 66.5f;
+                    xMax = 67.5f;
+                    yMin = 108.9f;
+                    yMax = 113.2f;
+                    break;
+                default:
+                    Console.AddLine("Uumuu RoomSpecific value " + index + " is invalid!");
+                    return;
+            }
+
+            var rand = new System.Random();
+
+            // Set the random offset used in Quirrel Timer and Uumuu position
+            do
+            {
+                randOffset = (float)rand.NextDouble() * 0.5f + (float)rand.NextDouble() * 0.5f + (float)rand.NextDouble() * 0.5f;
+            } while (BossHandler.forceUumuuExtra && randOffset > 0.5f);
+
+            // Give Dash Slash storage if using All Skills Roomspecific
+            if (index == 3)
+            {
+                FindFsmGlobally("Knight", "Nail Arts").SetState("Dash Slash Ready");
+            }
+
+            // Start battle
+            FindFsmGlobally("Battle Scene", "Control").SendEvent("ENTER");
+
             GameObject umuGo = GameObject.Find("Mega Jellyfish");
             PlayMakerFSM umuFSM = umuGo.LocateMyFSM("Mega Jellyfish");
 
-            PlayMakerFSM battleFSM = FindFsmGlobally("Battle Scene", "Control");
-            battleFSM.SendEvent("Enter");
+            // Set Uumuu's position randomly based on the min/max values and our randOffset (only the y value uses randoffset)
+            umuGo.transform.position = new Vector3(xMin + (float)rand.NextDouble() * (xMax - xMin), yMin + (yMax-yMin)/1.5f * (1.5f - randOffset));
 
-            Vector2 umuPos = new();
-
-            switch (index) {
-                case 1: // Any% & 1xx?
-                    umuPos = new Vector2(55.35359f, 109.8851f);
-                    break;
-                case 2: // TE & All Skills
-                    umuPos = new Vector2(68.3791f, 120.76f);
-                    break;
-                default:
-                    break;
-            }
-
-            // implement dash slash storage here?
-            //if(PlayerData.instance.hasDashSlash)
-            //{
-            //}
-
-            umuGo.transform.position = umuPos;
-            StartCoro(SummonQuirrel(umuFSM));
-        }
-        private static IEnumerator SummonQuirrel(PlayMakerFSM umuFSM)
-        {
-            umuFSM.SetState("Init");
-            // Init
-            umuFSM.SendEvent("FINISHED");
-            // Sleep
+            // Advance through Uumuu's FSM
             umuFSM.SendEvent("BATTLE START");
             // Wake Pause
             umuFSM.SendEvent("FINISHED");
@@ -349,14 +369,13 @@ namespace DebugMod
             umuFSM.SendEvent("FINISHED");
             // Burst
             umuFSM.SendEvent("FINISHED");
-            // Music
-            umuFSM.SendEvent("FINISHED");
             // Start
-            umuFSM.SendEvent("FINISHED");
-            // Idle
-            umuFSM.SendEvent("QUIRREL");
-            yield return new WaitForSeconds(1);
-            umuFSM.SetState("Slash Antic");
+
+            // Add randomly generated time to Quirrel Timer
+            umuFSM.FsmVariables.GetFsmFloat("Quirrel Timer").Value = 4.5f + randOffset;
+
+            // Set Uumuu's FSM to the appropriate state
+            umuFSM.SetState("Attack Recover");
         }
 
         #endregion

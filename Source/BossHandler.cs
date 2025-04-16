@@ -17,7 +17,7 @@ namespace DebugMod
         public static bool bossFound;
         public static bool ghostFound;
         
-        private static bool fsmToggle = false;
+        public static bool forceUumuuExtra = false;
 
         public static void LookForBoss(string sceneName)
         {
@@ -134,16 +134,16 @@ namespace DebugMod
 
         public static void UumuuExtra()
         {
-            if (!fsmToggle)
+            if (!forceUumuuExtra)
             {
                 SetUumuuExtra(UnityEngine.SceneManagement.SceneManager.GetActiveScene(), DebugMod.GM.nextScene);
                 UnityEngine.SceneManagement.SceneManager.activeSceneChanged += SetUumuuExtra;
-                fsmToggle = true;
+                forceUumuuExtra = true;
             }
             else
             {
                 UnityEngine.SceneManagement.SceneManager.activeSceneChanged -= SetUumuuExtra;
-                fsmToggle = false;
+                forceUumuuExtra = false;
                 Console.AddLine("Uumuu forced extra attack OFF");
             }
         }
