@@ -60,17 +60,19 @@ namespace DebugMod
             }
             public void SetDoor(PlayMakerFSM trans)
             {
-                Console.AddLine("1");
                 trans.FsmVariables.GetFsmString("Entry Gate").Value = entryPoint;
-                Console.AddLine("2");
                 trans.FsmVariables.GetFsmString("New Scene").Value = targetScene;
-                Console.AddLine("4");
             }
         }
         public static void Toggle()
         {
-            if (isSaved) { isSaved = false; return; }
-            SetState = !SetState;
+            if (isSaved) isSaved = false;
+            else
+            {
+                SetState = !SetState;
+            }
+            if (SetState) Console.AddLine("Sisyphus enabled, enter a transition to start ");
+            else Console.AddLine("Sisyphus eisabled");
         }
         private static bool IsDoor(TransitionPoint trans) => trans.isADoor || trans.name.Contains("door");
         public static void TransitionEntered(Action<TransitionPoint, Collider2D> orig, TransitionPoint self, Collider2D movingObj)
@@ -81,6 +83,7 @@ namespace DebugMod
                 {
                     if (SetState)
                     {
+                        Console.AddLine("Sisyphus save started");
                         isSaved = true;
                         SetState = false;
                         savedTrans = new(self);
