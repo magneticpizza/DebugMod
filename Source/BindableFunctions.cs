@@ -345,7 +345,7 @@ namespace DebugMod
             DebugMod.stateOnDeath = !DebugMod.stateOnDeath;
             Console.AddLine("Quickslot SaveState will " + (DebugMod.stateOnDeath ? "now" : "no longer") + " load on death");
         }
-        [BindableMethod(name ="Toggle Sisyphus Save", category = "Savestates")]
+        [BindableMethod(name ="Toggle Sisyphus Save", category = "Savestates cont.")]
         public static void ToggleSisyphusSave()
         {
             Sisyphus.Toggle();

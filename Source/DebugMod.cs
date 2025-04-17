@@ -159,7 +159,7 @@ namespace DebugMod
                 ChainTimer.Setup();
                 BossHandler.PopulateBossLists();
                 GUIController.Instance.BuildMenus();
-
+                Sisyphus.Init();
                 Console.AddLine("New session started " + DateTime.Now);
                 AmountToMove = settings.AmountToMove;
                 KeyBindLock = false;
