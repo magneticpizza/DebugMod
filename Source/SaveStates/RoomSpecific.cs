@@ -377,7 +377,7 @@ namespace DebugMod
             // Set Uumuu's FSM to the appropriate state
             umuFSM.SetState("Attack Recover");
         }
-        //Abyss_12
+        // Abyss_12
         private static void FastAbyssShriek(int index)
         {
             StartCoro(FastAbyssShriekCoro(index));
@@ -392,6 +392,32 @@ namespace DebugMod
             HeroController.instance.gameObject.LocateMyFSM("Spell Control").SetState("Has Scream?");
 
             yield break;
+        }
+
+        // Abyss_19
+        private static void FastBrokenVessel(int index)
+        {
+            PlayMakerFSM bvFSM = FindFsmGlobally("Infected Knight", "IK Control");
+
+            bvFSM.SetState("Sleep");
+            FindFsmGlobally("Battle Start", "Battle Start").SendEvent("HIT");
+
+            // Start Pause
+            bvFSM.SendEvent("FINISHED");
+            Console.AddLine(bvFSM.ActiveStateName);
+            // Rumble Start
+            bvFSM.SendEvent("FINISHED");
+            Console.AddLine(bvFSM.ActiveStateName);
+            // Spawning 1
+            bvFSM.SendEvent("FINISHED");
+            Console.AddLine(bvFSM.ActiveStateName);
+            // Spawning 2
+            bvFSM.SendEvent("FINISHED");
+            Console.AddLine(bvFSM.ActiveStateName);
+            // Spawning 3
+            // Spawning 4
+            // Stop Spawning
+            // Check Final
         }
 
         #endregion
@@ -423,6 +449,9 @@ namespace DebugMod
                     break;
                 case "Abyss_12":
                     FastAbyssShriek(index);
+                    break;
+                case "Abyss_19":
+                    FastBrokenVessel(index);
                     break;
                 default:
                     Console.AddLine("No Room Specific Function Found In: " + scene);
