@@ -96,8 +96,45 @@ namespace DebugMod
         private static void DoTHK(int index) //Room_Final_Boss
         {
             if (index == 2) RadianceEntrySequence();
+            else BreakTHKChains();
+        }
+        private static void BreakTHKChains()
+        {
+            FindFsmGlobally("Gate", "Control").SendEvent("ENTER");
+            PlayMakerFSM battleFSM = FindFsmGlobally("Boss Control", "Battle Start");
+            battleFSM.FsmVariables.FindFsmFloat("Title Time").Value = 0.5f;
 
-            else StartCoro(BreakTHKChainscoro(index));
+            if (!PlayerData.instance.unchainedHollowKnight)
+            {
+                string fsmName = "Control";
+                FindFsmGlobally("hollow_knight_chain_base", fsmName).SetState("Break");
+                FindFsmGlobally("hollow_knight_chain_base 2", fsmName).SetState("Break");
+                FindFsmGlobally("hollow_knight_chain_base 3", fsmName).SetState("Break");
+                FindFsmGlobally("hollow_knight_chain_base 4", fsmName).SetState("Break");
+
+                Console.AddLine(battleFSM.ActiveStateName);
+                battleFSM.SetState("Free Pause");
+                battleFSM.SendEvent("FINISHED");
+                // Struggle
+                battleFSM.SendEvent("FINISHED");
+                // Break Antic
+                battleFSM.SendEvent("FINISHED");
+                GameObject.Destroy(GameObject.Find("Roar Wave Emitter(Clone)"));
+                // Break
+                battleFSM.SendEvent("FINISHED");
+                // Fall
+                var go = GameObject.Find("Imprisoned Knight");
+                go.transform.SetPositionY(go.transform.position.y - 5.155516f);
+                battleFSM.SendEvent("LAND");
+                // Land
+                battleFSM.SendEvent("FINISHED");
+                // Roar Antic
+            }
+            else
+            {
+                PlayerData.instance.unchainedHollowKnight = false;
+                battleFSM.SetState("Roar Antic");
+            }
         }
         private static void RadianceEntrySequence()
         {
@@ -135,43 +172,6 @@ namespace DebugMod
 
             // Make it so the Radiance encounter is not a Refight
             HeroController.instance.proxyFSM.FsmVariables.FindFsmBool("Faced Radiance").Value = false;
-        }
-        private static IEnumerator BreakTHKChainscoro(int index)
-        {
-            float time = 14.2f;
-            float scale = index;
-            if (index < 1) { scale = 1; }
-            if (index > MAX_TIMESCALE) scale = MAX_TIMESCALE;
-            string fsmName = "Control";
-            string goName1 = "hollow_knight_chain_base";
-            string goName2 = "hollow_knight_chain_base 2";
-            string goName3 = "hollow_knight_chain_base 3";
-            string goName4 = "hollow_knight_chain_base 4";
-            PlayMakerFSM fsm1 = FindFsmGlobally(goName1, fsmName);
-            PlayMakerFSM fsm2 = FindFsmGlobally(goName2, fsmName);
-            PlayMakerFSM fsm3 = FindFsmGlobally(goName3, fsmName);
-            PlayMakerFSM fsm4 = FindFsmGlobally(goName4, fsmName);
-            fsm1.SetState("Break");
-            fsm2.SetState("Break");
-            fsm3.SetState("Break");
-            fsm4.SetState("Break");
-            bool right = HeroController.instance.cState.facingRight;
-            Vector2 current = DebugMod.HC.transform.position;
-            DebugMod.HC.transform.position = new Vector2(27.4200f, 6.410425f);
-            WaitForTime(1, scale);
-            yield return new WaitForSeconds(1);
-            DebugMod.HC.transform.position = current;
-            if (right)
-            {
-                HeroController.instance.FaceRight();
-            }
-            else
-            {
-                HeroController.instance.FaceLeft();
-            }
-            WaitForTime(time-1, scale);
-            yield return new WaitForSeconds(time-1);
-            Time.timeScale = 1f;
         } //Room_Final_Boss
         private static void ObtainDreamNail(int index)
         {
