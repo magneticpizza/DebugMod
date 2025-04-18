@@ -420,6 +420,24 @@ namespace DebugMod
             // Check Final
         }
 
+        //Mines_35
+        private static IEnumerator FastDDarkcoro(int index)
+        {
+            PlayMakerFSM ShamanFSM = FindFsmGlobally("Crystal Shaman", "Control");
+            if (index == 1)
+            {
+                ShamanFSM.SetState("Shatter");
+                yield return new WaitForFixedUpdate();
+                ShamanFSM.SetState("Get 2");
+            }
+            else if (index == 2)
+            {
+                ShamanFSM.FsmVariables.GetFsmInt("Hits").Value = 7;
+            }
+            yield break;
+        }
+
+
         #endregion
 
         public static void DoRoomSpecific(string scene, int index)
@@ -452,6 +470,9 @@ namespace DebugMod
                     break;
                 case "Abyss_19":
                     FastBrokenVessel(index);
+                    break;
+                case "Mines_35":
+                    StartCoro(FastDDarkcoro(index));
                     break;
                 default:
                     Console.AddLine("No Room Specific Function Found In: " + scene);
