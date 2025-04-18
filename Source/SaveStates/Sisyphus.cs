@@ -1,25 +1,15 @@
 ﻿using GlobalEnums;
-using HutongGames.PlayMaker;
-using HutongGames.PlayMaker.Actions;
-using Modding;
 using MonoMod.RuntimeDetour;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Text;
 using UnityEngine;
-using UnityEngineInternal;
 
 namespace DebugMod
 {
     internal static class Sisyphus
     {
-        //static FieldInfo activatedFieldInfo;
-        //private static bool getActivated(TransitionPoint trans) => (bool)activatedFieldInfo.GetValue(trans);
+        // TODO make it work with doors stags and other kinds of transitions
         static bool SetState = false;
-        //static float waitTime;
         static bool faceRight;
         private static int geo;
         private static int health;
@@ -28,31 +18,29 @@ namespace DebugMod
         static TransPoint savedTrans;
         struct TransPoint
         {
-            public bool isADoor;
-            public bool dontWalkOutOfDoor;
-            public float entryDelay;
-            public bool alwaysEnterRight;
-            public bool alwaysEnterLeft;
-            public bool hardLandOnExit;
+            //public bool isADoor;
+            //public bool dontWalkOutOfDoor;
+            //public float entryDelay;
+            //public bool alwaysEnterRight;
+            //public bool alwaysEnterLeft;
+            //public bool hardLandOnExit;
             public string targetScene;
             public string entryPoint;
-            public Vector2 entryOffset;
-            public bool nonHazardGate;
-            public string name;
+            //public Vector2 entryOffset;
+            //public bool nonHazardGate;
+            //public string name;
             public TransPoint(TransitionPoint trans)
             {
-                //isADoor = trans.isADoor;
-                dontWalkOutOfDoor = trans.dontWalkOutOfDoor;
-                entryDelay = trans.entryDelay;
-                entryOffset = trans.entryOffset;
-                alwaysEnterRight = trans.alwaysEnterRight;
-                alwaysEnterLeft = trans.alwaysEnterLeft;
-                hardLandOnExit = trans.hardLandOnExit;
                 targetScene = trans.targetScene;
                 entryPoint = trans.entryPoint;
-                nonHazardGate = trans.nonHazardGate;
-                name = trans.name;
             }
+
+            public TransPoint(PlayMakerFSM door)
+            {
+                entryPoint = door.FsmVariables.GetFsmString("Entry Gate").Value;
+                targetScene = door.FsmVariables.GetFsmString("New Scene").Value;
+            }
+
             public void SetTrans(TransitionPoint trans)
             {
                 trans.targetScene = targetScene;
@@ -72,10 +60,10 @@ namespace DebugMod
                 SetState = !SetState;
             }
             if (SetState) Console.AddLine("Sisyphus enabled, enter a transition to start ");
-            else Console.AddLine("Sisyphus eisabled");
+            else Console.AddLine("Sisyphus disabled");
         }
         private static bool IsDoor(TransitionPoint trans) => trans.isADoor || trans.name.Contains("door");
-        public static void TransitionEntered(Action<TransitionPoint, Collider2D> orig, TransitionPoint self, Collider2D movingObj)
+        private static void TransitionEntered(Action<TransitionPoint, Collider2D> orig, TransitionPoint self, Collider2D movingObj)
         {
             if (!string.IsNullOrEmpty(self.targetScene) && !string.IsNullOrEmpty(self.entryPoint))
             {
@@ -161,7 +149,6 @@ namespace DebugMod
             PlayMakerFSM.BroadcastEvent("MP DRAIN");
             PlayMakerFSM.BroadcastEvent("MP LOSE");
             PlayMakerFSM.BroadcastEvent("MP RESERVE DOWN");
-
         }
     }
 }
