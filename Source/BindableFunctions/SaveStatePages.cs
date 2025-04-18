@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 namespace DebugMod
 {
@@ -29,36 +30,22 @@ namespace DebugMod
             DebugMod.saveStateManager.LoadNewState(SaveStateType.SkipOne);
         }
 
+        [BindableMethod(name = "Open savestate in text editor", category = BindableCategory.SaveStatePages)]
+        public static void OpenSavestateFile()
+        {
+            DebugMod.saveStateManager.OpenFileOfState();
+        }
+
         [BindableMethod(name = "Next Save Page", category = BindableCategory.SaveStatePages)]
         public static void NextStatePage()
         {
-            if (SaveStateManager.inSelectSlotState)
-            {
-                SaveStateManager.currentStateFolder++;
-                if (SaveStateManager.currentStateFolder == SaveStateManager.savePages) { SaveStateManager.currentStateFolder = 0; } //rollback to 0 if 10, keep folder between 0 and 9
-                SaveStateManager.path = (
-                    Application.persistentDataPath +
-                    "/Savestates-1221/" +
-                    SaveStateManager.currentStateFolder.ToString() +
-                    "/"); //change path
-                DebugMod.saveStateManager.RefreshStateMenu(); // update menu
-            }
+            SaveStateManager.SetPage(SaveStateManager.currentStateFolder + 1);
         }
 
         [BindableMethod(name = "Prev Save Page", category = BindableCategory.SaveStatePages)]
         public static void PrevStatePage()
         {
-            if (SaveStateManager.inSelectSlotState)
-            {
-                SaveStateManager.currentStateFolder--;
-                if (SaveStateManager.currentStateFolder == -1) { SaveStateManager.currentStateFolder = SaveStateManager.savePages - 1; } //rollback to max if past limit, keep folder between 0 and 9
-                SaveStateManager.path = (
-                    Application.persistentDataPath +
-                    "/Savestates-1221/" +
-                    SaveStateManager.currentStateFolder.ToString() +
-                    "/"); //change path
-                DebugMod.saveStateManager.RefreshStateMenu(); // update menu
-            }
+            SaveStateManager.SetPage(SaveStateManager.currentStateFolder - 1);
         }
     }
 }

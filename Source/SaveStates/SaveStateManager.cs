@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using UnityEngine;
@@ -11,7 +12,8 @@ namespace DebugMod
     {
         Memory,
         File,
-        SkipOne
+        SkipOne,
+        EditFile
     }
 
     // TODO: Fix vessel count between savestates
@@ -132,6 +134,19 @@ namespace DebugMod
 
         #endregion
 
+        #region editing
+
+        public void OpenFileOfState()
+        {
+            if (!inSelectSlotState) 
+            {
+                RefreshStateMenu();
+                GameManager.instance.StartCoroutine(SelectSlot(false, SaveStateType.EditFile));
+            }
+        }
+
+        #endregion
+
         #region helper functionality
         private IEnumerator SelectSlot(bool save, SaveStateType stateType)
         {
@@ -145,6 +160,9 @@ namespace DebugMod
                     break;
                 case SaveStateType.SkipOne:
                     currentStateOperation = save ? "Save new state to file" : "Load new state from file";
+                    break;
+                case SaveStateType.EditFile:
+                    currentStateOperation = "Open savestate in text editor";
                     break;
                 default:
                     //DebugMod.instance.LogError("SelectSlot ended started");
@@ -169,7 +187,11 @@ namespace DebugMod
             {
                 if (currentStateSlot >= 0 && currentStateSlot < maxSaveStates)
                 {
-                    if (save)
+                    if (stateType == SaveStateType.EditFile)
+                    {
+                        EditCoroHelper();
+                    }
+                    else if (save)
                     {
                         SaveCoroHelper(stateType);
                     }
@@ -189,6 +211,14 @@ namespace DebugMod
             currentStateOperation = null;
             GUIController.inputEsc = GUIController.didInput = false;
             DebugMod.settings.SaveStatePanelVisible = inSelectSlotState = false;
+        }
+
+        private void EditCoroHelper()
+        {
+            if (saveStateFiles.ContainsKey(currentStateSlot))
+            {
+                Process.Start(path + "/savestate" + currentStateSlot.ToString() + ".json");
+            }
         }
 
         // Todo: cleanup Adds and Removes, because used to C++ :)
@@ -245,6 +275,22 @@ namespace DebugMod
                     break;
                 default:
                     break;
+            }
+        }
+
+        public static void SetPage(int page)
+        {
+            if (inSelectSlotState)
+            {
+                currentStateFolder = page;
+                if (currentStateFolder >= savePages) { currentStateFolder = 0; } //rollback to 0 if 10, keep folder between 0 and 9
+                if (currentStateFolder < 0) { currentStateFolder = savePages - 1; } //rollback to max if past limit, keep folder between 0 and 9
+                path = (
+                    Application.persistentDataPath +
+                    "/Savestates-1221/" +
+                    currentStateFolder.ToString() +
+                    "/"); //change path
+                DebugMod.saveStateManager.RefreshStateMenu(); // update menu
             }
         }
 
