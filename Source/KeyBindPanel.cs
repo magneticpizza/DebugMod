@@ -10,6 +10,7 @@ namespace DebugMod
     {
         private static CanvasPanel panel;
         private static int page = 0;
+        private const int MAX_BINDS_PER_PAGE = 11;
 
         private static Dictionary<string, List<string>> bindPages = new Dictionary<string, List<string>>();
         private static List<string> pageKeys;
@@ -52,7 +53,7 @@ namespace DebugMod
                             GUIController.Instance.images["ScrollBarArrowLeft"].height)
                     );
 
-            for (int i = 0; i < 11; i++)
+            for (int i = 0; i < MAX_BINDS_PER_PAGE; i++)
             {
                 panel.AddButton(i.ToString(), GUIController.Instance.images["Scrollbar_point"], new Vector2(290f, 45f + 17.5f * i), Vector2.zero, ChangeBind, new Rect(0, 0, GUIController.Instance.images["Scrollbar_point"].width, GUIController.Instance.images["Scrollbar_point"].height));
                 panel.AddButton($"run{i}", GUIController.Instance.images["ButtonRun"], new Vector2(308f, 51f + 17.5f * i), new Vector2(12f, 12f), RunBind, new Rect(0, 0, GUIController.Instance.images["ButtonRun"].width, GUIController.Instance.images["ButtonRun"].height));
@@ -62,10 +63,21 @@ namespace DebugMod
             foreach (KeyValuePair<string, Pair> bindable in DebugMod.bindMethods)
             {
                 string name = bindable.Key;
-                string cat = (string)bindable.Value.First;
+                string pageName;
+                int pageNumber = 1;
 
-                if (!bindPages.ContainsKey(cat)) bindPages.Add(cat, new List<string>());
-                bindPages[cat].Add(name);
+                // Checks if there are more functions than the current page can hold, and makes a new page if there are too many
+                do
+                {
+                    pageName = ((BindableCategory)bindable.Value.First).GetDescription() + 
+                        (pageNumber > 1 ? (" " + pageNumber.ToString()) : "");
+
+                    if (!bindPages.ContainsKey(pageName)) bindPages.Add(pageName, new List<string>());
+
+                    pageNumber++;
+                } while (bindPages[pageName].Count >= MAX_BINDS_PER_PAGE);
+
+                bindPages[pageName].Add(name);
             }
 
             pageKeys = bindPages.Keys.ToList();

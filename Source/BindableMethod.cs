@@ -6,6 +6,6 @@ namespace DebugMod
     public class BindableMethod : Attribute
     {
         public string name;
-        public string category;
+        public BindableCategory category;
     }
 }

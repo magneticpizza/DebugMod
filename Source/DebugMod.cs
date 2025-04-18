@@ -77,11 +77,14 @@ namespace DebugMod
                     {
                         BindableMethod attr = (BindableMethod)attributes[0];
                         string name = attr.name;
-                        string cat = attr.category;
+                        BindableCategory cat = attr.category;
 
                         bindMethods.Add(name, new Pair(cat, method));
                     }
                 }
+
+                // order the dictionary by the order they appear in the BindableCategory enum
+                bindMethods = bindMethods.OrderBy(x => x.Value.First).ToDictionary(x => x.Key, x => x.Value);
 
                 instance.Log("Done! Time taken: " + (Time.realtimeSinceStartup - startTime) + "s. Found " + bindMethods.Count + " methods");
 

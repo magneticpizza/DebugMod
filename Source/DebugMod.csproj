@@ -77,6 +77,26 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BindableMethod.cs" />
+    <Compile Include="BindableFunctions\BindableCategory.cs" />
+    <Compile Include="BindableFunctions\Bosses.cs" />
+    <Compile Include="BindableFunctions\Charms.cs" />
+    <Compile Include="BindableFunctions\Cheats.cs" />
+    <Compile Include="BindableFunctions\ColoWaves.cs" />
+    <Compile Include="BindableFunctions\Console.cs" />
+    <Compile Include="BindableFunctions\Consumables.cs" />
+    <Compile Include="BindableFunctions\Dreamgate.cs" />
+    <Compile Include="BindableFunctions\EnemyPanel.cs" />
+    <Compile Include="BindableFunctions\ExportData.cs" />
+    <Compile Include="BindableFunctions\Items.cs" />
+    <Compile Include="BindableFunctions\Loggers.cs" />
+    <Compile Include="BindableFunctions\Misc.cs" />
+    <Compile Include="BindableFunctions\ModUI.cs" />
+    <Compile Include="BindableFunctions\PlayerMovement.cs" />
+    <Compile Include="BindableFunctions\SaveStatePages.cs" />
+    <Compile Include="BindableFunctions\SaveStates.cs" />
+    <Compile Include="BindableFunctions\Skills.cs" />
+    <Compile Include="BindableFunctions\Spells.cs" />
+    <Compile Include="BindableFunctions\Visual.cs" />
     <Compile Include="ColoWaveChanger\ColoBronzeWaveChanger.cs" />
     <Compile Include="ColoWaveChanger\ColoGoldWaveChanger.cs" />
     <Compile Include="ColoWaveChanger\ColoSilverWaveChanger.cs" />
@@ -93,7 +113,6 @@
     <Compile Include="SaveStates\RoomSpecific.cs" />
     <Compile Include="MinimalInfoPanel.cs" />
     <Compile Include="KeyBindPanel.cs" />
-    <Compile Include="BindableFunctions.cs" />
     <Compile Include="Pair.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
