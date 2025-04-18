@@ -2,19 +2,17 @@
 using System.Collections;
 using System.Collections.Generic;
 using HutongGames.PlayMaker;
-using HutongGames.PlayMaker.Actions;
 using UnityEngine;
 
 namespace DebugMod
 {
     public static class RoomSpecific
     {
-        //This class is intended to recreate some scenarios, with more accuracy than that of the savestate class. 
-        #region Rooms
+        // This class is intended to recreate some scenarios, with more accuracy than that of the savestate class. 
         
-        private static readonly float MAX_TIMESCALE_LAGGY = 10;
-        private static readonly float MAX_TIMESCALE = 20;
-                private static List<Coroutine> coroRefs =[];
+        private static readonly float MAX_TIMESCALE = 10;
+        private static List<Coroutine> coroRefs =[];
+
         private static void StartCoro(IEnumerator routine)
         {
             coroRefs.Add(DebugMod.GM.StartCoroutine(routine));
@@ -23,6 +21,25 @@ namespace DebugMod
             coroRefs.ForEach(DebugMod.GM.StopCoroutine);
             coroRefs = [];
         }
+        private static void WaitForTime(float seconds, float scale)
+        {
+            StartCoro(WaitForTimeCoro(seconds, scale));
+        }
+        private static IEnumerator WaitForTimeCoro(float seconds, float scale)
+        {
+            float t = seconds + Time.time;
+            Time.timeScale = scale;
+            while (t > Time.time)
+            {
+                yield return new WaitUntil(() => t > Time.time | (Time.timeScale != scale));
+                Time.timeScale = scale;
+            }
+            Time.timeScale = 1;
+        }
+
+        #region Rooms
+
+        #region Deepnest_Spider_Town
         private static IEnumerator SpiderTownHelper(int index)
         {
             float beforeFirstSpider = 1.39f;//all from roomsob
@@ -51,7 +68,7 @@ namespace DebugMod
             PlayMakerFSM websFSM = FindFsmGlobally(goName, websFsmName);
             PlayMakerFSM benchFSM = FindFsmGlobally(goName, benchFsmName);
 
-            if (afterTimeScale > MAX_TIMESCALE_LAGGY) afterTimeScale = MAX_TIMESCALE_LAGGY;
+            if (afterTimeScale > MAX_TIMESCALE) afterTimeScale = MAX_TIMESCALE;
             if (index >= 1)
             {
                 GameManager.instance.hero_ctrl.RelinquishControl();
@@ -93,7 +110,10 @@ namespace DebugMod
         {
             StartCoro(SpiderTownHelper(index));
         }
-        private static void DoTHK(int index) //Room_Final_Boss
+        #endregion
+
+        #region Room_Final_Boss
+        private static void DoTHK(int index) 
         {
             if (index == 2) RadianceEntrySequence();
             else BreakTHKChains();
@@ -172,7 +192,10 @@ namespace DebugMod
 
             // Make it so the Radiance encounter is not a Refight
             HeroController.instance.proxyFSM.FsmVariables.FindFsmBool("Faced Radiance").Value = false;
-        } //Room_Final_Boss
+        }
+        #endregion
+
+        #region Dream_Nailcollection
         private static void ObtainDreamNail(int index)
         {
             string goName = "Witch Control";
@@ -189,21 +212,9 @@ namespace DebugMod
             fsm.SendEvent("FINISHED");
             DebugMod.HC.transform.position = new Vector2(263.1f, 52.406f);
         }
-        private static void WaitForTime(float seconds, float scale)
-        {
-            StartCoro(WaitForTimeCoro(seconds,scale));
-        }
-        private static IEnumerator WaitForTimeCoro(float seconds, float scale)
-        {
-            float t = seconds + Time.time;
-            Time.timeScale = scale;
-            while (t > Time.time)
-            {
-                yield return new WaitUntil(() => t > Time.time | (Time.timeScale != scale));
-                Time.timeScale = scale;
-            }
-            Time.timeScale = 1;
-        }
+        #endregion
+
+        #region Ruins1_24
         private static void FastSoulMaster(int index)
         {
             string goName = "Mage Lord"; //soul master gameobject
@@ -228,6 +239,9 @@ namespace DebugMod
                 quakeFakeFSM.SendEvent("QUAKE FAKE APPEAR");
             }
         }
+        #endregion
+
+        #region Cutscene_Boss_Door
         private static void FastDreamerCutscene(int index)
         {
             if (index == 1)
@@ -238,7 +252,9 @@ namespace DebugMod
                 CutsceneFSM.SetState("Fade");
             }
         }
+        #endregion
 
+        #region Ruins2_03
         private static void StartWatcherPair(int index)
         {
             PlayMakerFSM battleFSM = FindFsmGlobally("Battle Control", "Control");
@@ -313,6 +329,9 @@ namespace DebugMod
                 battleFSM.SendEvent("SKIP");
             }
         }
+        #endregion
+
+        #region Fungus3_archive_02
         private static void DoUumuu(int index)
         {
             float xMin, xMax, yMin, yMax, randOffset;
@@ -377,24 +396,25 @@ namespace DebugMod
             // Set Uumuu's FSM to the appropriate state
             umuFSM.SetState("Attack Recover");
         }
-        // Abyss_12
+        #endregion
+
+        #region Abyss_12
         private static void FastAbyssShriek(int index)
         {
             StartCoro(FastAbyssShriekCoro(index));
         }
         private static IEnumerator FastAbyssShriekCoro(int index)
         {
-            WaitForTime(14f,20);
-            HeroController.instance.transform.position = new(427.1f, 14f);
+            WaitForTime(13f, 10);
+            HeroController.instance.transform.position = FindFsmGlobally("Scream 2 Get", "Scream Get").FsmVariables.FindFsmVector3("Get Pos").Value;
             yield return new WaitForFixedUpdate();
-            HeroController.instance.transform.position = new(47.1f, 14f);
-            yield return new WaitForFixedUpdate();
-            HeroController.instance.gameObject.LocateMyFSM("Spell Control").SetState("Has Scream?");
+            HeroController.instance.spellControl.SetState("SG Antic");
 
             yield break;
         }
+        #endregion
 
-        // Abyss_19
+        #region Abyss_19
         private static void FastBrokenVessel(int index)
         {
             PlayMakerFSM bvFSM = FindFsmGlobally("Infected Knight", "IK Control");
@@ -419,24 +439,26 @@ namespace DebugMod
             // Stop Spawning
             // Check Final
         }
+        #endregion
 
-        //Mines_35
-        private static IEnumerator FastDDarkcoro(int index)
+        #region Mines_35
+        private static void FastDDark(int index)
         {
             PlayMakerFSM ShamanFSM = FindFsmGlobally("Crystal Shaman", "Control");
-            if (index == 1)
-            {
-                ShamanFSM.SetState("Shatter");
-                yield return new WaitForFixedUpdate();
-                ShamanFSM.SetState("Get 2");
+            switch (index) {
+                case 1:
+                    ShamanFSM.SetState("Shatter");
+                    ShamanFSM.SetState("Get 2");
+                    break;
+                case 2:
+                    ShamanFSM.FsmVariables.GetFsmInt("Hits").Value = 7;
+                    break;
+                default:
+                    Console.AddLine("Crystallized Mound RoomSpecific value " + index + " is invalid!");
+                    break;
             }
-            else if (index == 2)
-            {
-                ShamanFSM.FsmVariables.GetFsmInt("Hits").Value = 7;
-            }
-            yield break;
         }
-
+        #endregion
 
         #endregion
 
@@ -472,7 +494,7 @@ namespace DebugMod
                     FastBrokenVessel(index);
                     break;
                 case "Mines_35":
-                    StartCoro(FastDDarkcoro(index));
+                    FastDDark(index);
                     break;
                 default:
                     Console.AddLine("No Room Specific Function Found In: " + scene);
