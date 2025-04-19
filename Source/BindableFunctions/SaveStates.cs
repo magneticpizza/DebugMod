@@ -1,7 +1,25 @@
-﻿namespace DebugMod
+﻿using GlobalEnums;
+using System.Reflection;
+
+namespace DebugMod
 {
     public static partial class BindableFunctions
     {
+        [BindableMethod(name="Load scene bench", category =BindableCategory.SaveStates)]
+        public static void LoadBenchTing()
+        {
+            FieldInfo fadeFi = typeof(GameManager).GetField("needFirstFadeIn", BindingFlags.Instance | BindingFlags.NonPublic);
+            //FieldInfo intervalFi = typeof(GameManager).GetField("intervalStartTime", BindingFlags.Instance | BindingFlags.NonPublic);
+
+            //DebugMod.GM.SetupSceneRefs();
+            fadeFi.SetValue(DebugMod.GM, true);
+            //intervalFi.SetValue(DebugMod.GM, Time.realtimeSinceStartup);
+            DebugMod.GM.ReadyForRespawn();
+            DebugMod.GM.SetState(GameState.PLAYING);
+            DebugMod.GM.ui.ConfigureMenu();
+            //DebugMod.GM.ContinueGame();
+        }
+
         [BindableMethod(name = "Position Save", category = BindableCategory.SaveStates)]
         public static void RoomSaveState()
         {

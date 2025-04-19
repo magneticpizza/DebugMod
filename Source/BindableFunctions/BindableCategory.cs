@@ -11,6 +11,8 @@ namespace DebugMod
     public enum BindableCategory
     {
         Misc,
+        [Description("Gameplay Altering")]
+        GameplayAltering,
         SaveStates,
         [Description("SaveState Pages")]
         SaveStatePages,
@@ -19,13 +21,14 @@ namespace DebugMod
         ModUI,
         [Description("Enemy Panel")]
         EnemyPanel,
-        Console,
         Cheats,
         Charms,
         Skills,
         Spells,
         Bosses,
         Items,
+        [Description("Masks & Vessels")]
+        MasksAndVessels,
         Consumables,
         Dreamgate,
         [Description("Export Data")]

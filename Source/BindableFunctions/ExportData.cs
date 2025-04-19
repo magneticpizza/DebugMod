@@ -29,6 +29,13 @@ namespace DebugMod
             );
         }
 
+        [BindableMethod(name = "Dump Console", category = BindableCategory.ExportData)]
+        public static void DumpConsoleLog()
+        {
+            Console.AddLine("Saving console log...");
+            Console.SaveHistory();
+        }
+
         /*
         [BindableMethod(name = "Scene FSMs to file", category = BindableCategory.ExportData)]
         public static void FSMsToFile()

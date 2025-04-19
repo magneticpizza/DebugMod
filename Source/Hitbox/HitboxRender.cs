@@ -42,7 +42,7 @@ namespace DebugMod.Hitbox
             {HitboxType.Other, new HashSet<Collider2D>()},
         };
 
-        private float LineWidth => Math.Max(0.7f, Screen.width / 960f * GameCameras.instance.tk2dCam.ZoomFactor);
+        public static float LineWidth => Math.Max(0.7f, Screen.width / 960f * GameCameras.instance.tk2dCam.ZoomFactor);
 
         private void Start()
         {

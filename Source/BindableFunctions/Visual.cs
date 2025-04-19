@@ -1,4 +1,5 @@
 ﻿using System;
+using DebugMod.Hitbox;
 using UnityEngine;
 
 namespace DebugMod
@@ -142,6 +143,53 @@ namespace DebugMod
                 component.color = color;
                 Console.AddLine("Rendering Hero sprite visible...");
             }
+        }
+
+        [BindableMethod(name = "Shade Spawn Points", category = BindableCategory.Visual)]
+        public static void ShadeSpawnPoint()
+        {
+            if (DebugMod.HC == null)
+            {
+                Console.AddLine("Player isn't in scene. How did you reach here?");
+                return;
+            }
+
+            var component = HeroController.instance.gameObject.GetComponent<ShadeSpawnLocation>();
+            if (component == null) HeroController.instance.gameObject.AddComponent<ShadeSpawnLocation>();
+            //not gonna delete component if disabled to not break something if someone spams
+
+            ShadeSpawnLocation.EnabledCompass = !ShadeSpawnLocation.EnabledCompass;
+            Console.AddLine("Shade spawn point toggled " + (ShadeSpawnLocation.EnabledCompass ? "On" : "Off"));
+        }
+
+        [BindableMethod(name = "Shade Retreat Border", category = BindableCategory.Visual)]
+        public static void ShowShadeRetreatBorder()
+        {
+            if (DebugMod.HC == null)
+            {
+                Console.AddLine("Player isn't in scene. How did you reach here?");
+                return;
+            }
+
+            var component = HeroController.instance.gameObject.GetComponent<ShadeSpawnLocation>();
+            if (component == null) HeroController.instance.gameObject.AddComponent<ShadeSpawnLocation>();
+            //not gonna delete component if disabled to not break something if someone spams
+
+            if (!ShadeSpawnLocation.EnabledCompass)
+            {
+                ShadeSpawnLocation.EnabledCompass = true;
+            }
+
+            if (++ShadeSpawnLocation.ShowShadeRetreatBorder > 2) ShadeSpawnLocation.ShowShadeRetreatBorder = 0;
+
+            string displaytext = ShadeSpawnLocation.ShowShadeRetreatBorder switch
+            {
+                1 => "Closest",
+                2 => "All",
+                _ => "None"
+            };
+
+            Console.AddLine($"Shade Reach Showing {displaytext}");
         }
     }
 }

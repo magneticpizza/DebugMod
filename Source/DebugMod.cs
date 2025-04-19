@@ -48,6 +48,8 @@ namespace DebugMod
         internal static Vector3 noclipPos;
         internal static bool cameraFollow;
         internal static bool stateOnDeath;
+        internal static bool TimeScaleActive;
+        internal static float CurrentTimeScale = 1f;
 
         internal static SaveStateManager saveStateManager;
 
@@ -166,6 +168,7 @@ namespace DebugMod
                 Console.AddLine("New session started " + DateTime.Now);
                 AmountToMove = settings.AmountToMove;
                 KeyBindLock = false;
+                TimeScaleActive = false;
             }
             catch (Exception e) {
                 DebugMod.instance.Log(String.Concat(

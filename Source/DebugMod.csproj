@@ -76,13 +76,14 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BindableFunctions\GameplayAltering.cs" />
+    <Compile Include="BindableFunctions\MasksAndVessels.cs" />
     <Compile Include="BindableMethod.cs" />
     <Compile Include="BindableFunctions\BindableCategory.cs" />
     <Compile Include="BindableFunctions\Bosses.cs" />
     <Compile Include="BindableFunctions\Charms.cs" />
     <Compile Include="BindableFunctions\Cheats.cs" />
     <Compile Include="BindableFunctions\ColoWaves.cs" />
-    <Compile Include="BindableFunctions\Console.cs" />
     <Compile Include="BindableFunctions\Consumables.cs" />
     <Compile Include="BindableFunctions\Dreamgate.cs" />
     <Compile Include="BindableFunctions\EnemyPanel.cs" />
@@ -100,6 +101,7 @@
     <Compile Include="ColoWaveChanger\ColoBronzeWaveChanger.cs" />
     <Compile Include="ColoWaveChanger\ColoGoldWaveChanger.cs" />
     <Compile Include="ColoWaveChanger\ColoSilverWaveChanger.cs" />
+    <Compile Include="Hitbox\ShadeSpawnLocation.cs" />
     <Compile Include="SavePositionManager.cs" />
     <Compile Include="EnemiesPanel.cs" />
     <Compile Include="EnemyData.cs" />
