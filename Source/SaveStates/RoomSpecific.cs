@@ -40,7 +40,7 @@ namespace DebugMod
         #region Rooms
 
         #region Deepnest_Spider_Town
-        private static IEnumerator SpiderTownHelper(int index)
+        private static IEnumerator SpiderTownHelper(int index, PlayMakerFSM benchFSM, PlayMakerFSM websFSM)
         {
             float beforeFirstSpider = 1.39f;//all from roomsob
             float activateLeftTime = 2.02f;
@@ -59,14 +59,7 @@ namespace DebugMod
             Vector2 activateRightPos = new(44f, 58.5f);
             Vector2 trappedPos = new(263.1f, 52.406f);
 
-            string goName = "RestBench Spider";
-            string websFsmName = "Fade";
-            string benchFsmName = "Bench Control Spider";
-
             DebugMod.HC.transform.position = roomStartPos;
-
-            PlayMakerFSM websFSM = FindFsmGlobally(goName, websFsmName);
-            PlayMakerFSM benchFSM = FindFsmGlobally(goName, benchFsmName);
 
             if (afterTimeScale > MAX_TIMESCALE) afterTimeScale = MAX_TIMESCALE;
             if (index >= 1)
@@ -108,7 +101,40 @@ namespace DebugMod
         }
         private static void EnterSpiderTownTrap(int index) //Deepnest_Spider_Town
         {
-            StartCoro(SpiderTownHelper(index));
+            string goName = "RestBench Spider";
+            string websFsmName = "Fade";
+            string benchFsmName = "Bench Control Spider";
+            PlayMakerFSM websFSM = FindFsmGlobally(goName, websFsmName);
+            PlayMakerFSM benchFSM = FindFsmGlobally(goName, benchFsmName);
+
+            if (index == 1)
+            {
+                benchFSM.SetState("Start Rest");
+                benchFSM.SendEvent("WAIT");
+                // Sit Start
+                benchFSM.SendEvent("FINISHED");
+                // Neutral
+                benchFSM.SendEvent("STRUGGLE");
+
+                // Idle
+                websFSM.SendEvent("FIRST STRUGGLE");
+                // Wait
+                websFSM.SendEvent("FINISHED");
+                // Start Fade
+                websFSM.SendEvent("FINISHED");
+                // Finish Fade
+                websFSM.SendEvent("FINISHED");
+                // Sound 1
+                websFSM.SendEvent("LAND");
+                // Capture End
+                websFSM.SendEvent("FINISHED");
+                // Fade Up
+                websFSM.SendEvent("FINISHED");
+                // Stuck
+                websFSM.FsmVariables.FindFsmInt("Struggles").Value = 3;
+            }
+
+            else StartCoro(SpiderTownHelper(index, benchFSM, websFSM));
         }
         #endregion
 
