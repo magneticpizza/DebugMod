@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using HutongGames.PlayMaker.Actions;
 using UnityEngine;
 
 namespace DebugMod
@@ -217,7 +218,20 @@ namespace DebugMod
         {
             if (saveStateFiles.ContainsKey(currentStateSlot))
             {
-                Process.Start(path + "/savestate" + currentStateSlot.ToString() + ".json");
+                try
+                {
+                    Process.Start(path + "/savestate" + currentStateSlot.ToString() + ".json");
+                }
+                catch (Exception e) {
+                    DebugMod.instance.Log(String.Concat(
+                            "\n - Error opening SaveState ", currentStateSlot.ToString(), " on page ", (currentStateFolder + 1).ToString(), " in text editor: ",
+                            "\n - Source: ", e.Source,
+                            "\n - Message: ", e.Message,
+                            "\n - InnerException: ", e.InnerException,
+                            "\n - RuntimeType:", e.GetType(),
+                            "\n - StackTrace:", e.StackTrace)
+                        );
+                }
             }
         }
 
