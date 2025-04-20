@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using GlobalEnums;
+using System.Reflection;
 using HutongGames.PlayMaker;
 using UnityEngine;
 
@@ -490,6 +492,21 @@ namespace DebugMod
 
         public static void DoRoomSpecific(string scene, int index)
         {
+            if (index == -1)
+            {
+                FieldInfo fadeFi = typeof(GameManager).GetField("needFirstFadeIn", BindingFlags.Instance | BindingFlags.NonPublic);
+                //FieldInfo intervalFi = typeof(GameManager).GetField("intervalStartTime", BindingFlags.Instance | BindingFlags.NonPublic);
+
+                //DebugMod.GM.SetupSceneRefs();
+                fadeFi.SetValue(DebugMod.GM, true);
+                //intervalFi.SetValue(DebugMod.GM, Time.realtimeSinceStartup);
+                DebugMod.GM.ReadyForRespawn();
+                DebugMod.GM.SetState(GameState.PLAYING);
+                DebugMod.GM.ui.ConfigureMenu();
+                //DebugMod.GM.ContinueGame();
+                return;
+            }
+
             switch (scene)
             {
                 case "Deepnest_Spider_Town":
