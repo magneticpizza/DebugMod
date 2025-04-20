@@ -1,4 +1,5 @@
 ﻿using GlobalEnums;
+using Modding;
 using MonoMod.RuntimeDetour;
 using System;
 using System.Reflection;
@@ -8,7 +9,7 @@ namespace DebugMod
 {
     internal static class Sisyphus
     {
-        // TODO make it work with doors stags and other kinds of transitions
+        // TODO make it work with stags/dreams and other kinds of transitions ?
         static bool SetState = false;
         static bool faceRight;
         private static int geo;
@@ -18,17 +19,8 @@ namespace DebugMod
         static TransPoint savedTrans;
         struct TransPoint
         {
-            //public bool isADoor;
-            //public bool dontWalkOutOfDoor;
-            //public float entryDelay;
-            //public bool alwaysEnterRight;
-            //public bool alwaysEnterLeft;
-            //public bool hardLandOnExit;
             public string targetScene;
             public string entryPoint;
-            //public Vector2 entryOffset;
-            //public bool nonHazardGate;
-            //public string name;
             public TransPoint(TransitionPoint trans)
             {
                 targetScene = trans.targetScene;
@@ -99,7 +91,6 @@ namespace DebugMod
         {
             if(IsDoor(self) && self.gameObject.LocateMyFSM("Door Control").ActiveStateName == "Enter")
             {
-                Console.AddLine(self.gameObject.LocateMyFSM("Door Control").ActiveStateName);
                 if (SetState)
                 {
                     Console.AddLine("Sisyphus save started");
@@ -116,28 +107,23 @@ namespace DebugMod
                     if (faceRight) HeroController.instance.FaceRight();
                     else HeroController.instance.FaceLeft();
                     savedTrans.SetDoor(self.gameObject.LocateMyFSM("Door Control"));
-                    // HUDFixes();
+                    HUDFixes();
+                    HeroController.instance.RelinquishControl();
                 }
             }
             
             orig(self, movingObj);
         }
-        private static void ChangeToScene(Action<GameManager, string, string, float> orig, GameManager self, string targetScene, string entryGateName, float f)
-        {
-            orig(self, targetScene, entryGateName, f);
-        }
 
         public static void Init()
         {
-            //activatedFieldInfo = typeof(TransitionPoint).GetField("activated", BindingFlags.NonPublic | BindingFlags.Instance);
             MethodInfo OnTransEnter = typeof(TransitionPoint).GetMethod("OnTriggerEnter2D", BindingFlags.NonPublic | BindingFlags.Instance);
             MethodInfo OnTransStay = typeof(TransitionPoint).GetMethod("OnTriggerStay2D", BindingFlags.NonPublic | BindingFlags.Instance);
-            MethodInfo OnChangeToScene = typeof(GameManager).GetMethod("ChangeToScene", BindingFlags.Public | BindingFlags.Instance);
 
             if (OnTransEnter != null) new Hook(OnTransEnter, TransitionEnter);
             if (OnTransStay != null) new Hook(OnTransStay, TransitionStay);
-            //if (OnChangeToScene != null) new Hook(OnChangeToScene, ChangeToScene);
         }
+
         //copied from SaveState.cs
         private static void HUDFixes()
         {
