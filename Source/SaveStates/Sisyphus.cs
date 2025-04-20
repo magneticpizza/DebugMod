@@ -63,11 +63,11 @@ namespace DebugMod
             else Console.AddLine("Sisyphus disabled");
         }
         private static bool IsDoor(TransitionPoint trans) => trans.isADoor || trans.name.Contains("door");
-        private static void TransitionEntered(Action<TransitionPoint, Collider2D> orig, TransitionPoint self, Collider2D movingObj)
+        private static void TransitionEnter(Action<TransitionPoint, Collider2D> orig, TransitionPoint self, Collider2D movingObj)
         {
             if (!string.IsNullOrEmpty(self.targetScene) && !string.IsNullOrEmpty(self.entryPoint))
             {
-                if (movingObj.gameObject.layer == 9 && GameManager.instance.gameState == GameState.PLAYING)
+                if (movingObj.gameObject.layer == 9 && GameManager.instance.gameState == GameState.PLAYING && !IsDoor(self))
                 {
                     if (SetState)
                     {
@@ -89,20 +89,54 @@ namespace DebugMod
                             savedTrans.SetTrans(self);
                             HUDFixes();
                         }
-                        else
-                        {
-                            savedTrans.SetDoor(self.gameObject.LocateMyFSM("Door Control"));
-                        }
                     }
                 }
             }
             orig(self, movingObj);
         }
+
+        private static void TransitionStay(Action<TransitionPoint, Collider2D> orig, TransitionPoint self, Collider2D movingObj)
+        {
+            if(IsDoor(self) && self.gameObject.LocateMyFSM("Door Control").ActiveStateName == "Enter")
+            {
+                Console.AddLine(self.gameObject.LocateMyFSM("Door Control").ActiveStateName);
+                if (SetState)
+                {
+                    Console.AddLine("Sisyphus save started");
+                    savedTrans = new(self.gameObject.LocateMyFSM("Door Control"));
+                    isSaved = true;
+                    SetState = false;
+                    health = PlayerData.instance.health;
+                    geo = PlayerData.instance.geo;
+                    healthBlue = PlayerData.instance.healthBlue;
+                    faceRight = HeroController.instance.cState.facingRight;
+                }
+                else if(isSaved)
+                {
+                    if (faceRight) HeroController.instance.FaceRight();
+                    else HeroController.instance.FaceLeft();
+                    savedTrans.SetDoor(self.gameObject.LocateMyFSM("Door Control"));
+                    // HUDFixes();
+                }
+            }
+            
+            orig(self, movingObj);
+        }
+        private static void ChangeToScene(Action<GameManager, string, string, float> orig, GameManager self, string targetScene, string entryGateName, float f)
+        {
+            orig(self, targetScene, entryGateName, f);
+        }
+
         public static void Init()
         {
             //activatedFieldInfo = typeof(TransitionPoint).GetField("activated", BindingFlags.NonPublic | BindingFlags.Instance);
             MethodInfo OnTransEnter = typeof(TransitionPoint).GetMethod("OnTriggerEnter2D", BindingFlags.NonPublic | BindingFlags.Instance);
-            if (OnTransEnter != null) new Hook(OnTransEnter, TransitionEntered);
+            MethodInfo OnTransStay = typeof(TransitionPoint).GetMethod("OnTriggerStay2D", BindingFlags.NonPublic | BindingFlags.Instance);
+            MethodInfo OnChangeToScene = typeof(GameManager).GetMethod("ChangeToScene", BindingFlags.Public | BindingFlags.Instance);
+
+            if (OnTransEnter != null) new Hook(OnTransEnter, TransitionEnter);
+            if (OnTransStay != null) new Hook(OnTransStay, TransitionStay);
+            //if (OnChangeToScene != null) new Hook(OnChangeToScene, ChangeToScene);
         }
         //copied from SaveState.cs
         private static void HUDFixes()
