@@ -1,0 +1,27 @@
+Roomspecific List
+- ALL SCENES
+	- -1: load into bench/hardsave
+- Deepnest_Spider_Town (Den)
+	- 1: load into webs quickly (innacurate enemy positions)
+	- 2 -> 10: load at N timeScale (very accurate enemy positions)
+- Room_Final_Boss (THK)
+	- 1: load into THK fight (accurate with livesplit timer)
+	- 2: load into radiance dream entry sequence (accurate with livesplit timer)
+- Dream_Nailcollection (dream plats)
+	- 1: load into right before dnail cutscene start
+- Ruins1_24 (Soul Master)
+	- 1: load into phase 1 of soul master
+	- 2: load into phase 2 of soul master
+- Cutscene_Boss_Door (dreamer cutscene)
+	- 1: skip dreamer cutscene
+- Ruins2_03 (Watcher Knights)
+	- 1: start at first wk pair
+	- 2: start at second wk pair
+- Fungus3_archive_02 (Uumuu)
+	- 1: Load into Any% first damage cycle
+	- 2: Load into TE first damage cycle
+	- 3: Load into AS first damage cycle
+- Abyss_12 (Abyss Shriek)
+	- 1: Obtain Abyss shriek quickly
+- Abyss_19 (Broken vessel)
+	- 1: Start Broken Vessel quickly
