@@ -246,7 +246,8 @@ namespace DebugMod
             yield return null;
             HeroController.instance.gameObject.transform.position = data.savePos;
             JsonUtility.FromJsonOverwrite(JsonUtility.ToJson(data.savedPd), PlayerData.instance);
-            GameManager.instance.ChangeToScene(data.saveScene, "", 0f);
+            bool preLoad = RoomSpecific.PreLoadRoomSpecific(data.saveScene, data.useRoomSpecific);
+            if (!preLoad) GameManager.instance.ChangeToScene(data.saveScene, "", 0f);
             JsonUtility.FromJsonOverwrite(JsonUtility.ToJson(data.savedSd), SceneData.instance);
             try
             {
@@ -258,7 +259,10 @@ namespace DebugMod
             {
                 Debug.LogError(message);
             }
-            yield return new WaitUntil(() => UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == data.saveScene);
+            if (!preLoad)yield return new WaitUntil(() => UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == data.saveScene); //normal way
+            else yield return new WaitUntil(() => 
+                UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == data.saveScene ||
+                UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == data.savedPd.respawnScene); //quitout glitch fix
             HeroController.instance.playerData = PlayerData.instance;
             HeroController.instance.geoCounter.playerData = PlayerData.instance;
             HeroController.instance.proxyFSM.SendEvent("HeroCtrl-HeroLanded");

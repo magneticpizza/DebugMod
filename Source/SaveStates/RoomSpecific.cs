@@ -489,24 +489,28 @@ namespace DebugMod
         #endregion
 
         #endregion
-
-        public static void DoRoomSpecific(string scene, int index)
+        // called right after the dummy scene loading
+        public static bool PreLoadRoomSpecific(string scene, int index)
         {
             if (index == -1)
             {
-                FieldInfo fadeFi = typeof(GameManager).GetField("needFirstFadeIn", BindingFlags.Instance | BindingFlags.NonPublic);
+                //FieldInfo fadeFi = typeof(GameManager).GetField("needFirstFadeIn", BindingFlags.Instance | BindingFlags.NonPublic);
                 //FieldInfo intervalFi = typeof(GameManager).GetField("intervalStartTime", BindingFlags.Instance | BindingFlags.NonPublic);
 
                 //DebugMod.GM.SetupSceneRefs();
-                fadeFi.SetValue(DebugMod.GM, true);
+                //fadeFi.SetValue(DebugMod.GM, true);
                 //intervalFi.SetValue(DebugMod.GM, Time.realtimeSinceStartup);
                 DebugMod.GM.ReadyForRespawn();
                 DebugMod.GM.SetState(GameState.PLAYING);
                 DebugMod.GM.ui.ConfigureMenu();
                 //DebugMod.GM.ContinueGame();
-                return;
+                return true;
             }
+            return false;
+        }
 
+        public static void DoRoomSpecific(string scene, int index)
+        {
             switch (scene)
             {
                 case "Deepnest_Spider_Town":
