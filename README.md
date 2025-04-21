@@ -108,8 +108,8 @@ Specifies slot number, then loads savestate from that file directly.
 ----------------------------------------------------------------------------------------
                                           CREDITS
 ----------------------------------------------------------------------------------------
-Stratsus
-Magneticpizza
+Stratsus  
+Magneticpizza  
 Seresharp  
 56  
 Yurihaia  
