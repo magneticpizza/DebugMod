@@ -83,7 +83,7 @@ namespace DebugMod
             (1 << 11) + //enemies
             //(1 << 17) + //attack
             (1 << 19); //interactive objects
-            float boxSize = 250f;
+            float boxSize = 1500f;
             if (HeroController.instance != null && !HeroController.instance.cState.transitioning && DebugMod.GM.IsGameplayScene())
             {
                 Collider2D[] array = Physics2D.OverlapBoxAll(DebugMod.RefKnight.transform.position, new Vector2(boxSize, boxSize), 1f, layerMask);
