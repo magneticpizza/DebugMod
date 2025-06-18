@@ -5,6 +5,7 @@ using GlobalEnums;
 using System.Reflection;
 using HutongGames.PlayMaker;
 using UnityEngine;
+using HutongGames.PlayMaker.Actions;
 
 namespace DebugMod
 {
@@ -488,6 +489,26 @@ namespace DebugMod
         }
         #endregion
 
+        #region Dream_Abyss
+
+        private static void FastVoidHeart(int index)
+        {
+            // Skip opening cutscene
+            FindFsmGlobally("Entry Cutscene", "Control").SetState("End");
+
+            // Skips ending cutscene
+            if (index == 2)
+            {
+                PlayMakerFSM endFsm = FindFsmGlobally("End Cutscene", "Control");
+                endFsm.SetState("Start");
+                endFsm.SetState("Black");
+                endFsm.SendEvent("FINISHED");
+                endFsm.SetState("Text 3");
+            }
+        }
+
+        #endregion
+
         #endregion
         // called right after the dummy scene loading
         public static bool PreLoadRoomSpecific(string scene, int index)
@@ -542,6 +563,9 @@ namespace DebugMod
                     break;
                 case "Mines_35":
                     FastDDark(index);
+                    break;
+                case "Dream_Abyss":
+                    FastVoidHeart(index);
                     break;
                 default:
                     Console.AddLine("No Room Specific Function Found In: " + scene);

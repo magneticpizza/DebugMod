@@ -230,6 +230,12 @@ namespace DebugMod
             PlayMakerFSM.BroadcastEvent("BOX DOWN DREAM");
             PlayMakerFSM.BroadcastEvent("CONVO CANCEL");
 
+            if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Dream_Abyss")
+            {
+                // Gets rid of extra darkness from Void Heart cutscene
+                PlayMakerFSM.BroadcastEvent("SCENE START");
+            }
+
             data.cameraLockArea = (data.cameraLockArea ?? typeof(CameraController).GetField("currentLockArea", BindingFlags.Instance | BindingFlags.NonPublic));
             string dummyScene = 
                 UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Room_Mender_House" ? 
