@@ -129,7 +129,7 @@ namespace DebugMod.Hitbox
 
         private void DrawHitbox(Camera camera, Collider2D collider2D, HitboxType hitboxType, float lineWidth)
         {
-            if (collider2D == null || !collider2D.isActiveAndEnabled)
+            if (collider2D == null || !collider2D.isActiveAndEnabled || ShouldCullCollider(camera, collider2D))
             {
                 return;
             }
@@ -185,6 +185,18 @@ namespace DebugMod.Hitbox
             }
 
             GUI.depth = origDepth;
+        }
+
+        private bool ShouldCullCollider(Camera camera, Collider2D collider2D)
+        {
+            Bounds bounds = collider2D.bounds;
+
+            Vector3 min = camera.WorldToViewportPoint(bounds.min);
+            Vector3 max = camera.WorldToViewportPoint(bounds.max);
+
+            bool overlap = (min.x < 1 && max.x > 0 && min.y < 1 && max.y > 0);
+
+            return !overlap;
         }
     }
 }
